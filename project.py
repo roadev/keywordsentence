@@ -1,4 +1,5 @@
 import pandas as pd
+import re
 import plotly.express as px
 import numpy as np
 import nltk
@@ -23,8 +24,8 @@ vectorizer = TfidfVectorizer(stop_words='english')
 term_sentence_matrix = vectorizer.fit_transform(all_sentences)
 
 # Apply SVD for rank-k approximation
-k = 100
-svd = TruncatedSVD(n_components=k)
+n_components = 120
+svd = TruncatedSVD(n_components=n_components, random_state=42)
 rank_k_approximation = svd.fit_transform(term_sentence_matrix)
 
 # Get the SVD matrices
@@ -36,7 +37,7 @@ VT = svd.components_                     # V^T matrix
 A = U @ Sigma @ VT
 
 # Compute term and sentence saliency scores (singular vectors)
-term_saliency_scores = np.abs(svd.components_[0])  # Use absolute values of the first right singular vector
+term_saliency_scores = np.abs(svd.components_[0])
 sentence_saliency_scores = rank_k_approximation.sum(axis=1)
 
 # Function to extract top n keywords from a resume
@@ -57,6 +58,14 @@ def extract_top_sentences(sentences, vectorizer, svd_transformer, saliency_score
     top_n_indices = np.argsort(sentence_scores)[-n:]
     top_n_sentences = np.array(sentences)[top_n_indices]
     return top_n_sentences[::-1]
+
+
+def split_into_sentences(text):
+    # Split the text into sentences using a regular expression
+    sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', text)
+    return sentences
+
+df['Sentences'] = df['Resume_str'].apply(split_into_sentences)
 
 
 # Extract top keywords and sentences for each resume
