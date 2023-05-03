@@ -101,3 +101,7 @@ term_fig.show()
 # Plot sentence saliency scores
 sentence_fig = px.line(y=sentence_saliency_scores, title="Sentence Saliency Scores", labels=dict(index="Sentences", value="Saliency Score"))
 sentence_fig.show()
+
+pd.set_option('display.max_colwidth', None)
+
+df[['Top_Keywords', 'Top_Sentences']].head()
